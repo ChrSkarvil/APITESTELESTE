@@ -95,15 +95,26 @@ namespace CoreCodeCamp.Controllers
         {
             try
             {
-                var existing = await _repository.GetProductInfoAsync(model.EAN, model.GTIN);
-                if (existing != null)
+                if (model.EAN != null)
                 {
-                    return BadRequest("EAN or GTIN in Use");
+                    var existing = await _repository.GetProductInfoAsync(model.EAN, null);
+                    if (existing != null)
+                    {
+                        return BadRequest("EAN in Use");
+                    }
+                }
+                else if (model.GTIN != null)
+                {
+                    var existing = await _repository.GetProductInfoAsync(model.GTIN, null);
+                    if (existing != null)
+                    {
+                        return BadRequest("GTIN in Use");
+                    }
                 }
 
                 if (model.EAN != null)
                 {
-                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfos", new { ean = model.EAN });
+                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfo", new { ean = model.EAN });
 
                     if (string.IsNullOrWhiteSpace(location))
                     {
@@ -115,25 +126,25 @@ namespace CoreCodeCamp.Controllers
                     _repository.Add(productInfo);
                     if (await _repository.SaveChangesAsync())
                     {
-                        return Created($"/api/camps/{productInfo.EAN}", _mapper.Map<ProductInfoModel>(productInfo));
+                        return Created($"/api/ProductInfo/{productInfo.EAN}", _mapper.Map<ProductInfoModel>(productInfo));
                     }
 
                 }
-                else
+                else if (model.GTIN != null)
                 {
-                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfos", new { gtin = model.GTIN });
+                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfo", new { gtin = model.GTIN });
 
                     if (string.IsNullOrWhiteSpace(location))
                     {
                         return BadRequest("Could not use current GTIN");
                     }
 
-                    //Create a new Camp
+                    //Create a new ProductInfo
                     var productInfo = _mapper.Map<ProductInfo>(model);
                     _repository.Add(productInfo);
                     if (await _repository.SaveChangesAsync())
                     {
-                        return Created($"/api/camps/{productInfo.GTIN}", _mapper.Map<ProductInfoModel>(productInfo));
+                        return Created($"/api/ProductInfo/{productInfo.GTIN}", _mapper.Map<ProductInfoModel>(productInfo));
                     }
                 }
 
@@ -147,53 +158,53 @@ namespace CoreCodeCamp.Controllers
             return BadRequest();
         }
 
-        //[HttpPut("{moniker}")]
-        //public async Task<ActionResult<CampModel>> Put(string moniker, CampModel model)
-        //{
-        //    try
-        //    {
-        //        var oldCamp = await _repository.GetCampAsync(moniker);
-        //        if (oldCamp == null) return NotFound($"Could not find camp with moniker of {moniker}");
+        [HttpPut("{ean}/{gtin}")]
+        public async Task<ActionResult<ProductInfoModel>> Put(long? ean, long? gtin, ProductInfoModel model)
+        {
+            try
+            {
+                var oldProductInfo = await _repository.GetProductInfoAsync(ean, gtin);
+                if (oldProductInfo == null) return NotFound($"Could not find productinfo{ean} {gtin}");
 
-        //        _mapper.Map(model, oldCamp);
+                _mapper.Map(model, oldProductInfo);
 
-        //        if (await _repository.SaveChangesAsync())
-        //        {
-        //            return _mapper.Map<CampModel>(oldCamp);
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
+                if (await _repository.SaveChangesAsync())
+                {
+                    return _mapper.Map<ProductInfoModel>(oldProductInfo);
+                }
+            }
+            catch (Exception)
+            {
 
-        //        return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
-        //    }
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
 
-        //    return BadRequest();
-        //}
+            return BadRequest();
+        }
 
-        //[HttpDelete("{moniker}")]
-        //public async Task<IActionResult> Delete(string moniker)
-        //{
-        //    try
-        //    {
-        //        var oldCamp = await _repository.GetCampAsync(moniker);
-        //        if (oldCamp == null) return NotFound();
+        [HttpDelete("{ean}/{gtin}")]
+        public async Task<IActionResult> Delete(long? ean, long? gtin)
+        {
+            try
+            {
+                var oldProductInfo = await _repository.GetProductInfoAsync(ean, gtin);
+                if (oldProductInfo == null) return NotFound();
 
-        //        _repository.Delete(oldCamp);
+                _repository.Delete(oldProductInfo);
 
-        //        if (await _repository.SaveChangesAsync())
-        //        {
-        //            return Ok();
-        //        }
+                if (await _repository.SaveChangesAsync())
+                {
+                    return Ok("Successfully deleted Product Info");
+                }
 
-        //    }
-        //    catch (Exception)
-        //    {
+            }
+            catch (Exception)
+            {
 
-        //        return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
-        //    }
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+            return BadRequest("Failed To Delete The Product Info");
+        }
 
-        //    return BadRequest("Failed to delete the camp");
-        //}
     }
 }
