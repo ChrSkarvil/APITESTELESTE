@@ -51,16 +51,27 @@ namespace CoreCodeCamp.Data
             return await query.ToArrayAsync();
         }
 
-        public async Task<ProductInfo> GetProductInfoAsync(int productInfoID)
+        public async Task<ProductInfo> GetProductInfoAsync(long? ean, long? gtin)
         {
-            _logger.LogInformation($"Getting Product info for {productInfoID}");
+            if (ean != 0)
+            {
+                _logger.LogInformation($"Getting Product info for {ean}");
 
-            IQueryable<ProductInfo> query = _context.ProductInfo;
-
-            // Query It
-            query = query.Where(c => c.ProductInfoID == productInfoID);
-
+                IQueryable<ProductInfo> query = _context.ProductInfo;
+                // Query It
+                query = query.Where(c => c.EAN == ean);
             return await query.FirstOrDefaultAsync();
+            }
+            else
+            {
+                _logger.LogInformation($"Getting Product info for {gtin}");
+
+                IQueryable<ProductInfo> query = _context.ProductInfo;
+                // Query It
+                query = query.Where(c => c.GTIN == gtin);
+                return await query.FirstOrDefaultAsync();
+            }
+
         }
 
         public async Task<Product[]> GetAllProductsAsync()

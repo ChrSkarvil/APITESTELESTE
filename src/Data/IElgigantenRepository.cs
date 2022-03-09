@@ -16,7 +16,7 @@ namespace CoreCodeCamp.Data
 
         // ProductInfo
         Task<ProductInfo[]> GetAllProductInfosAsync();
-        Task<ProductInfo> GetProductInfoAsync(int productInfoID);
+        Task<ProductInfo> GetProductInfoAsync(long? ean, long? gtin);
 
         // Product
         Task<Product> GetProductAsync(int productID);

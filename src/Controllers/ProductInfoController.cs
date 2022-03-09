@@ -1,6 +1,7 @@
 ﻿
 using AutoMapper;
 using CoreCodeCamp.Data;
+using CoreCodeCamp.Data.Entities;
 using CoreCodeCamp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,17 +48,40 @@ namespace CoreCodeCamp.Controllers
 
         }
 
-        [HttpGet("{productInfoID}")]
+        //[HttpGet("{productInfoID}")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult<ProductInfoModel>> Get(int productInfoID)
+        //{
+        //    try
+        //    {
+
+        //            var result = await _repository.GetProductInfoAsync(productInfoID);
+
+        //        if (result == null) return NotFound();
+
+        //        return _mapper.Map<ProductInfoModel>(result);
+
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+        //    }
+        //}
+
+        [HttpGet("{ean}/{gtin}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult<ProductInfoModel>> Get(int productInfoID)
+        public async Task<ActionResult<ProductInfoModel>> Get(long? ean, long? gtin)
         {
             try
             {
-                var result = await _repository.GetProductInfoAsync(productInfoID);
+
+                var result = await _repository.GetProductInfoAsync(ean, gtin);
 
                 if (result == null) return NotFound();
 
                 return _mapper.Map<ProductInfoModel>(result);
+
             }
             catch (Exception)
             {
@@ -66,41 +90,62 @@ namespace CoreCodeCamp.Controllers
             }
         }
 
-        //public async Task<ActionResult<CampModel>> Post(CampModel model)
-        //{
-        //    try
-        //    {
-        //        var existing = await _repository.GetCampAsync(model.Moniker);
-        //        if (existing != null)
-        //        {
-        //            return BadRequest("Moniker in Use");
-        //        }
 
-        //        var location = _linkGenerator.GetPathByAction("Get", "Camps", new { moniker = model.Moniker });
+        public async Task<ActionResult<ProductInfoModel>> Post(ProductInfoModel model)
+        {
+            try
+            {
+                var existing = await _repository.GetProductInfoAsync(model.EAN, model.GTIN);
+                if (existing != null)
+                {
+                    return BadRequest("EAN or GTIN in Use");
+                }
 
-        //        if (string.IsNullOrWhiteSpace(location))
-        //        {
-        //            return BadRequest("Could not use current moniker");
-        //        }
+                if (model.EAN != null)
+                {
+                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfos", new { ean = model.EAN });
 
-        //        //Create a new Camp
-        //        var camp = _mapper.Map<Camp>(model);
-        //        _repository.Add(camp);
-        //        if (await _repository.SaveChangesAsync())
-        //        {
-        //            return Created($"/api/camps/{camp.Moniker}", _mapper.Map<CampModel>(camp));
-        //        }
+                    if (string.IsNullOrWhiteSpace(location))
+                    {
+                        return BadRequest("Could not use current EAN");
+                    }
 
+                    //Create a new ProductInfo
+                    var productInfo = _mapper.Map<ProductInfo>(model);
+                    _repository.Add(productInfo);
+                    if (await _repository.SaveChangesAsync())
+                    {
+                        return Created($"/api/camps/{productInfo.EAN}", _mapper.Map<ProductInfoModel>(productInfo));
+                    }
 
-        //    }
-        //    catch (Exception)
-        //    {
+                }
+                else
+                {
+                    var location = _linkGenerator.GetPathByAction("Get", "ProductInfos", new { gtin = model.GTIN });
 
-        //        return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
-        //    }
+                    if (string.IsNullOrWhiteSpace(location))
+                    {
+                        return BadRequest("Could not use current GTIN");
+                    }
 
-        //    return BadRequest();
-        //}
+                    //Create a new Camp
+                    var productInfo = _mapper.Map<ProductInfo>(model);
+                    _repository.Add(productInfo);
+                    if (await _repository.SaveChangesAsync())
+                    {
+                        return Created($"/api/camps/{productInfo.GTIN}", _mapper.Map<ProductInfoModel>(productInfo));
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+
+            return BadRequest();
+        }
 
         //[HttpPut("{moniker}")]
         //public async Task<ActionResult<CampModel>> Put(string moniker, CampModel model)
