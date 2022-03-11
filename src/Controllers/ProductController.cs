@@ -31,11 +31,11 @@ namespace CoreCodeCamp.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ProductModel[]>> Get()
+        public async Task<ActionResult<ProductModel[]>> Get(bool includeProductInfos = false)
         {
             try
             {
-                var results = await _repository.GetAllProductsAsync();
+                var results = await _repository.GetAllProductsAsync(includeProductInfos);
 
                 return _mapper.Map<ProductModel[]>(results);
             }
@@ -64,7 +64,7 @@ namespace CoreCodeCamp.Controllers
 
         //        return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
         //    }
-        }
+    }
 
         //public async Task<ActionResult<CampModel>> Post(CampModel model)
         //{

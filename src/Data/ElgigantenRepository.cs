@@ -74,22 +74,46 @@ namespace CoreCodeCamp.Data
 
         }
 
-        public async Task<Product[]> GetAllProductsAsync()
+        //query = ((IQueryable<Product>)(from p in _context.Product.AsQueryable()
+        //                               join pi in _context.ProductInfo.AsQueryable() on p.ProductInfo.ProductInfoID equals pi.ProductInfoID
+        //                               where p.ProductInfo.ProductInfoID == pi.ProductInfoID
+        //                               select new
+        //                                       {
+        //                                           ProductInfoID = pi.ProductInfoID,
+        //                                       }));
+
+
+        public async Task<Product[]> GetAllProductsAsync(bool includeProductInfos = false)
         {
             _logger.LogInformation($"Getting Products");
 
-            var query = _context.Product;
+
+
+            IQueryable<Product> query = _context.Product;   
+
+            if (includeProductInfos)
+            {
+                //query = query.Include(c => c.ProductInfos);
+                query = ((IQueryable<Product>)(from p in _context.Product.AsQueryable()
+                                               join pi in _context.ProductInfo.AsQueryable() on p.ProductInfo.ProductInfoID equals pi.ProductInfoID
+                                               where p.ProductInfo.ProductInfoID == pi.ProductInfoID
+                                               select p.ProductInfos));
+
+                //query.Include(c => c.ProductInfos)
+            }
+
+            //var query = _context.Product;
 
             return await query.ToArrayAsync();
         }
 
 
-        public async Task<Product> GetProductAsync(int productID)
+        public async Task<Product> GetProductAsync(string productName)
         {
             _logger.LogInformation($"Getting Product");
 
             var query = _context.Product
-              .Where(t => t.ProductID == productID);
+              .Where(t => t.ProductName == productName);
 
             return await query.FirstOrDefaultAsync();
         }

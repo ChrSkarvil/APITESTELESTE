@@ -11,6 +11,12 @@ namespace CoreCodeCamp.Data.Entities
         public int ProductID { get; set; }
         public string ProductName { get; set; }
         public decimal ProductPrice { get; set; }
+        public int ManufacturerID { get; set; }
+        public int CategoryID { get; set; }
+        public ProductInfo ProductInfo { get; set; }
+        public ICollection<ProductInfo> ProductInfos { get; set; }
+
         //public ICollection<ProductInfo> ProductInfos { get; set; }
+
     }
 }

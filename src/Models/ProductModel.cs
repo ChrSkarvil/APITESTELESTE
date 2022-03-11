@@ -12,6 +12,8 @@ namespace CoreCodeCamp.Models
         public int ProductID { get; set; }
         public string ProductName { get; set; }
         public decimal ProductPrice { get; set; }
-        //public ICollection<ProductInfo> ProductInfos { get; set; }
+        public int ManufacturerID { get; set; }
+        public int CategoryID { get; set; }
+        public ICollection<ProductInfo> ProductInfos { get; set; }
     }
 }
