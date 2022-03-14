@@ -18,8 +18,8 @@ namespace CoreCodeCamp.Data
 
 
             this.CreateMap<Product, ProductModel>()
-                .ReverseMap()
-                .ForMember(t => t.ProductInfo, opt => opt.Ignore());
+                .ReverseMap();
+                //.ForMember(t => t.ProductInfo, opt => opt.Ignore());
 
         }
     }
